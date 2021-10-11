@@ -15,13 +15,24 @@ import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
 
-const val SIGN_IN_CODE=10
 private const val TAG = "HelloFragment"
 
 class HelloFragment : Fragment() {
     private var _binding :FragmentHelloBinding?=null
     private val binding get() = _binding!!
     private val viewModel:LoginViewModel by viewModels()
+
+    var result = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
+        activityResult->
+        val response = IdpResponse.fromResultIntent(activityResult.data)
+        if(activityResult.resultCode== Activity.RESULT_OK)
+        {
+            Log.d(TAG, "onActivityResult: Success login username${FirebaseAuth.getInstance().currentUser?.displayName}")
+        }else
+        {
+            Log.d(TAG, "onActivityResult: SignIN failed: ${response?.error.toString()}")
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -39,15 +50,14 @@ class HelloFragment : Fragment() {
     private fun login() {
         viewModel.authenticationState.observe(viewLifecycleOwner) {
             if (it == AuthenticationState.AUTHENTICATED) {
-                binding.btnLoginLogout.text = "Logout"
-                binding.tvHello.text =
-                    "Hello ${FirebaseAuth.getInstance().currentUser?.displayName}"
+                binding.btnLoginLogout.text = getString(R.string.logout_string)
+                binding.tvHello.text =getString(R.string.Hello_string,FirebaseAuth.getInstance().currentUser?.displayName)
                 binding.btnLoginLogout.setOnClickListener {
                     AuthUI.getInstance().signOut(requireContext())
                 }
             } else {
-                binding.btnLoginLogout.text = "Login"
-                binding.tvHello.text = "Hello"
+                binding.btnLoginLogout.text = getString(R.string.login_string)
+                binding.tvHello.text = getString(R.string.Hello_string,"")
                 binding.btnLoginLogout.setOnClickListener {
                     signIn()
                 }
@@ -55,20 +65,7 @@ class HelloFragment : Fragment() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode== SIGN_IN_CODE)
-        {
-            val response = IdpResponse.fromResultIntent(data)
-            if(resultCode== Activity.RESULT_OK)
-            {
-                Log.d(TAG, "onActivityResult: Success login username${FirebaseAuth.getInstance().currentUser?.displayName}")
-            }else
-            {
-                Log.d(TAG, "onActivityResult: SignIN failed: ${response?.error.toString()}")
-            }
-        }
-    }
+
 
     private fun signIn()
     {
@@ -76,12 +73,10 @@ class HelloFragment : Fragment() {
             AuthUI.IdpConfig.EmailBuilder().build(),
             AuthUI.IdpConfig.GoogleBuilder().build())
 
-        startActivityForResult(
-            AuthUI.getInstance()
-                .createSignInIntentBuilder()
-                .setAvailableProviders(providers)
-                .build(), SIGN_IN_CODE
-        )
+        result.launch(AuthUI.getInstance()
+            .createSignInIntentBuilder()
+            .setAvailableProviders(providers)
+            .build())
     }
 
     override fun onDestroyView() {

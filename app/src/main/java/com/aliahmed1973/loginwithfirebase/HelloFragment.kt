@@ -71,7 +71,8 @@ class HelloFragment : Fragment() {
     {
         val providers = arrayListOf(
             AuthUI.IdpConfig.EmailBuilder().build(),
-            AuthUI.IdpConfig.GoogleBuilder().build())
+            AuthUI.IdpConfig.GoogleBuilder().build(),
+        AuthUI.IdpConfig.FacebookBuilder().build())
 
         result.launch(AuthUI.getInstance()
             .createSignInIntentBuilder()

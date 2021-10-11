@@ -5,4 +5,7 @@
     <string name="logout_string">Logout</string>
     <string name="login_string">Login</string>
     <string name="Hello_string">Hello %1$s</string>
+
+    <string name="facebook_application_id" translatable="false">579122026873592</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fb579122026873592</string>
 </resources>
